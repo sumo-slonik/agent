@@ -112,6 +112,9 @@ class DNA:
 
 class Agent(mesa.Agent):
     DNA = None
+    # multiplication offset
+    sleepMult = 0
+    energy = 0
     AgentStructure = None
 
     def __init__(self, dnaLength, unique_id, model, dna=[]):
@@ -122,11 +125,37 @@ class Agent(mesa.Agent):
         else:
             self.DNA = DNA(dnaLength, [])
         self.AgentStructure = AgentStructure(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        self.energy = self.AgentStructure.maxEnergy
 
     def step(self):
         # The agent's step will go here.
         # For demonstration purposes we will print the agent's unique_id
-        print("Hi, I am agent " + str(self.unique_id) + " " + str(self.DNA.returnAgentStructure()))
+        # print("Hi, I am agent " + str(self.unique_id) + " " + str(self.DNA.returnAgentStructure()))
+        print("My position " + str(self.pos))
+        print("neighbours " + str(self.model.grid.get_cell_list_contents([self.pos])))
+        canMultipleWith: [Agent] = self.model.grid.get_cell_list_contents([self.pos])
+        if self.sleepMult > 0:
+            self.sleepMult -= 1
+        canMultipleWith = list(filter(lambda x: x.sleepMult == 0, canMultipleWith))
+        canMultipleWith.sort(key=lambda x: x.energy, reverse=True)
+        first = None
+        second = None
+        if len(canMultipleWith) > 2:
+            first = canMultipleWith[0]
+            second = canMultipleWith[1]
+        direction = random.randint(0, 5)
+        if first and second:
+            child = first * second
+            self.model.add_agent(child)
+
+        if direction == 0:
+            self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1]))
+        if direction == 1:
+            self.model.grid.move_agent(self, (self.pos[0], self.pos[1] + 1))
+        if direction == 2:
+            self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))
+        if direction == 3:
+            self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))
 
     def __mul__(self, other):
         if type(other) is not Agent:
@@ -134,8 +163,9 @@ class Agent(mesa.Agent):
         firstDNA = self.DNA.dnaCode
         secondDNA = other.DNA.dnaCode
         minLength = min(len(firstDNA), len(secondDNA))
-        crossPoint = random(minLength) % NUMBER_OF_ELEMENTS
+        crossPoint = random.randint(0, minLength) % NUMBER_OF_ELEMENTS
         resultDna = firstDNA if len(firstDNA) > len(secondDNA) else secondDNA
         resultDna = resultDna[:-crossPoint] + (firstDNA if len(firstDNA) < len(secondDNA) else secondDNA)[:crossPoint]
         resultDNA = DNA(len(resultDna), resultDna)
-        return Agent(len(DNA), DNA)
+        self.sleepMult = 5
+        return Agent(len(resultDna), random.random(), self.model, resultDNA)
