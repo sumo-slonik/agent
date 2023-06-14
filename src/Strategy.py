@@ -22,8 +22,8 @@ class BiomChanger(Strategy):
 
     def movie(self, x, y):
         if self.firstTime:
-            actualDirectory = random.randint(0, 4)
-            firstTime = False
+            self.actualDirectory = random.randint(0, 4)
+            self.firstTime = False
         else:
             if self.actualDirectory == 0:
                 x += 1

@@ -40,10 +40,9 @@ class Food(mesa.Agent):
 
 
 class Agent(mesa.Agent):
-    def __init__(self, unique_id, model: mesa.Model, start_structure=None, structure_delta=None,
+    def __init__(self, unique_id, model: mesa.Model, structure_delta=None,
                  dna_len=5):
         super().__init__(unique_id, model)
-        self.start_structure = start_structure
         self.structure_delta = structure_delta
         self.energy = random.randint(50, 100)
         self.dna = DNA(dna_len, structure_delta=structure_delta)
@@ -71,7 +70,7 @@ class Agent(mesa.Agent):
                 dna: DNA = first.dna * second.dna
                 print("nowe dna")
                 print(dna.returnDeltaStructure())
-                child = Agent(self.model.num_agents + random.randint(1e12, 1e13), self.model, self.start_structure,
+                child = Agent(self.model.num_agents + random.randint(1e12, 1e13), self.model,
                               dna.returnDeltaStructure(),
                               dna.dnaLength)
                 self.model.add_agent(child)
@@ -102,7 +101,7 @@ class Agent(mesa.Agent):
 
 
 class Model(mesa.Model):
-    def __init__(self, N, start_structure: CompanyStructure = None, width=10,
+    def __init__(self, N, width=10,
                  height=10):
         self.grid = mesa.space.MultiGrid(width, height, True)
         self.num_agents = N
@@ -114,7 +113,7 @@ class Model(mesa.Model):
                                    random_numbers[2],
                                    random_numbers[3],
                                    random_numbers[4])
-            a = Agent(i, self, start_structure=start_structure, structure_delta=delta)
+            a = Agent(i, self, structure_delta=delta)
             self.schedule.add(a)
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
@@ -144,13 +143,10 @@ class Model(mesa.Model):
 
 
 if __name__ == '__main__':
-    start_structure = CompanyStructure(10, 10, 10, 10, 10)
-    bitStudio2016 = CompanyStructure(9490, 34898, 42126, 444, 2692)
-    bitStudio2016.visualize()
     grid = mesa.visualization.CanvasGrid(agent_portrayal, 100, 100, 500, 500)
     server = mesa.visualization.ModularServer(
         Model, [grid], "Evolution simulation",
-        {"N": 1000, "width": 100, "height": 100, "start_structure": bitStudio2016}
+        {"N": 80, "width": 100, "height": 100}
     )
     server.port = 8521  # The default
     server.launch()
